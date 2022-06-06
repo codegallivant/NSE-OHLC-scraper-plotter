@@ -8,6 +8,7 @@ import pandas
 import matplotlib.pyplot as mplp
 import matplotlib.dates as mpld
 import mplcursors
+import numpy
 import time
     
 #Note: Requires internet connection 
@@ -174,25 +175,56 @@ def plot():
 
     x = [datetime.strptime(str(date.date()),'%Y-%m-%d').date() for date in dates]
 
-    mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
-    mplp.gca().xaxis.set_major_locator(mpld.DayLocator())
-
     mplp.plot(x,opening, label="Open")
     mplp.plot(x,high, label="High")
     mplp.plot(x,low, label="Low")
     mplp.plot(x,closing, label="Close")
 
+    #Ensuring no overlap between x ticks
+    if len(x) <= 40:
+        mplp.gca().xaxis.set_major_locator(mpld.DayLocator())
+        mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
+        mplp.xticks(rotation=30) #To reduce overlapping of x ticks 
+    elif len(x) <=80:
+        mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=15))
+        mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
+        mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+    else:
+        mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=32))
+        mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%b %Y'))
+        mplp.xticks(rotation=0) #To reduce overlapping of x ticks 
+    
     mplp.gcf().autofmt_xdate()
+    
     mplp.xlabel("Date")
     mplp.ylabel("O/H/L/C Price (₹)")
-
-    mplp.xticks(rotation=60) #To reduce overlapping of x ticks 
-
     
     mplp.title(f"[ O/H/L/C prices V/S respective dates ] for {codetype} '{code}' (Analysis date range: {get_ambient_date(start_date)} to {get_ambient_date(end_date)})")
     mplp.legend()
 
+    #Implementing hover functionality
     crs = mplcursors.cursor(hover=True)
+
+    #Ensuring that the graph window is maximized on startup
+    try:
+        # Option 1
+        # QT backend
+        manager = mplp.get_current_fig_manager()
+        manager.window.showMaximized()
+    except:
+        try:
+            # Option 2
+            # TkAgg backend
+            manager = mplp.get_current_fig_manager()
+            manager.resize(*manager.window.maxsize())
+        except: 
+            try:   
+                # Option 3
+                # WX backend
+                manager = mplp.get_current_fig_manager()
+                manager.frame.Maximize(True)
+            except:
+                pass
 
     mplp.show()
 
