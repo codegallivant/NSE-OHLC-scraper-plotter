@@ -16,7 +16,7 @@ import time
 
 print("\n")
 
-#Inputting script name 
+#Inputting Equity / Indice choice
 while True:
     codetype = input("Choose (Type 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART etc)\n2: Indice    (Examples: Nifty 50, Nifty 100, Nifty 200 etc)\n")
     print("\n")
@@ -48,7 +48,7 @@ while True:
     
     break
 
-
+#Inputting name of equity/indice
 code = input(f"Which {codetype}'s details do you want to see?\n")
 
 #Ensuring issues due to case sensitivity don't occur 
