@@ -111,8 +111,8 @@ def getOHLC(date, code, codetype):
         file_url = f"https://www1.nseindia.com/content/indices/ind_close_all_{date.strftime('%d')}{date.strftime('%m')}{date.strftime('%Y')}.csv"     
     # print(file_url)
     '''
-    Equity file_url example = https://www1.nseindia.com/content/indices/ind_close_all_03062022.csv
-    Indice file_url example = https://www1.nseindia.com/content/historical/EQUITIES/2022/MAY/cm04MAY2022bhav.csv.zip
+    Equity file_url example = https://www1.nseindia.com/content/historical/EQUITIES/2022/MAY/cm04MAY2022bhav.csv.zip
+    Indice file_url example = https://www1.nseindia.com/content/indices/ind_close_all_03062022.csv
 
     Equity file_url template = https://www1.nseindia.com/content/historical/EQUITIES/{year}/{monthshortformincaps}/cm{Dayofmonth}{monthshortformincaps}{year}bhav.csv.zip
     Indice file_url template = https://www1.nseindia.com/content/indices/ind_close_all_{dayofmonth}{monthofyear}{year}.csv
