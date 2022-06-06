@@ -196,20 +196,28 @@ def plot():
     mplp.show()
 
 
+
 print("\n")
+
 
 
 
 if dates==[]:
 
-    print(f"No trades took place in the duration specified.\nThis is because the analysis date range specified completely consists of National Stock Exchange holidays, on which trading does not occur. Saturday, Sunday and national holidays are non-working days for the stock exchange.\nTo obtain proper results, please set a suitable date range after running the program again.")
+    print(f"No trades took place in the duration specified.\nThis may be because the analysis date range specified completely consists of National Stock Exchange holidays, on which trading does not occur. Saturday, Sunday and national holidays are non-working days for the stock exchange.\nTo obtain proper results, please set a suitable date range after running the program again.")
+    
+    if int(start_date.strftime('%Y')) < 2017: 
+        print("* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.")
     
     print(f"Time taken: {measure_algorithm_time()}")
 
 elif OHLC is False:
 
     print(f"The {codetype} '{code}' does not exist i.e it is not registered in the NSE of India. Please enter a valid {codetype} to obtain proper results.")
-
+    
+    if int(start_date.strftime('%Y')) < 2017: 
+        print("* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.")    
+    
     print(f"Time taken: {measure_algorithm_time()}")
 
 else:
