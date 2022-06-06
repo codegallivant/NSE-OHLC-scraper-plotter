@@ -14,11 +14,11 @@ import time
 
 
 
-print("\n")
+print("\nNote: Requires internet connection.\n")
 
-#Inputting Equity / Indice choice
+#Inputting Equity/Indice choice
 while True:
-    codetype = input("Choose (Enter 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART etc)\n2: Indice    (Examples: Nifty 50, Nifty 100, Nifty 200 etc)\n")
+    codetype = input("Choose (Enter 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART, INFY, ASIANPAINT etc)\n2: Indice    (Examples: Nifty 50, Nifty Next 50, Nifty 100, Nifty 200 etc)\n")
     print("\n")
 
     if codetype == '1':
@@ -137,6 +137,7 @@ def getOHLC(date, code, codetype):
 dates_copy = list(dates)
 
 
+#Calling getOHLC() function for each date between start_date and end_date
 for date in dates:
     
     try:
@@ -183,12 +184,12 @@ def plot():
 
     mplp.gcf().autofmt_xdate()
     mplp.xlabel("Date")
-    mplp.ylabel("O/H/L/C (₹)")
+    mplp.ylabel("O/H/L/C Price (₹)")
 
     mplp.xticks(rotation=60) #To reduce overlapping of x ticks 
 
     
-    mplp.title(f"[ O/H/L/C values V/S respective dates ] for {codetype} '{code}' (Analysis date range: {get_ambient_date(start_date)} to {get_ambient_date(end_date)})")
+    mplp.title(f"[ O/H/L/C prices V/S respective dates ] for {codetype} '{code}' (Analysis date range: {get_ambient_date(start_date)} to {get_ambient_date(end_date)})")
     mplp.legend()
 
     crs = mplcursors.cursor(hover=True)
@@ -207,7 +208,7 @@ if dates==[]:
     print(f"No trades took place in the duration specified.\nThis may be because the analysis date range specified completely consists of National Stock Exchange holidays, on which trading does not occur. Saturday, Sunday and national holidays are non-working days for the stock exchange.\nTo obtain proper results, please set a suitable date range after running the program again.")
     
     if int(start_date.strftime('%Y')) < 2017: 
-        print("* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.")
+        print("\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.\n")
     
     print(f"Time taken: {measure_algorithm_time()}")
 
@@ -216,7 +217,7 @@ elif OHLC is False:
     print(f"The {codetype} '{code}' does not exist i.e it is not registered in the NSE of India. Please enter a valid {codetype} to obtain proper results.")
     
     if int(start_date.strftime('%Y')) < 2017: 
-        print("* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.")    
+        print("\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.\n")    
     
     print(f"Time taken: {measure_algorithm_time()}")
 
