@@ -2,6 +2,8 @@
 Plots a graph of OHLC values (Open, high, low, close) versus date for an equity/indice registered in the National Stock Exchange of India (NSE).
 Requires an internet connection to work.
 
+## :white_check_mark: Completed.
+
 ## What is OHLC ?
 An OHLC chart is a type of chart that shows open, high, low, and closing prices for each period. OHLC charts are useful since they show the four major data points over a period, with the closing price being considered the most important by many traders. 
 
