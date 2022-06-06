@@ -18,7 +18,7 @@ print("\n")
 
 #Inputting Equity / Indice choice
 while True:
-    codetype = input("Choose (Type 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART etc)\n2: Indice    (Examples: Nifty 50, Nifty 100, Nifty 200 etc)\n")
+    codetype = input("Choose (Enter 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART etc)\n2: Indice    (Examples: Nifty 50, Nifty 100, Nifty 200 etc)\n")
     print("\n")
 
     if codetype == '1':
@@ -49,7 +49,7 @@ while True:
     break
 
 #Inputting name of equity/indice
-code = input(f"Which {codetype}'s details do you want to see?\n")
+code = input(f"Which {codetype}'s details do you want to see? The {codetype} must be registered in the National Stock Exchange of India.\n")
 
 #Ensuring issues due to case sensitivity don't occur 
 if codetype == "equity":
@@ -208,7 +208,7 @@ if dates==[]:
 
 elif OHLC is False:
 
-    print(f"The {codetype} '{code}' does not exist. Please enter a valid {codetype} to obtain proper results.")
+    print(f"The {codetype} '{code}' does not exist i.e it is not registered in the NSE of India. Please enter a valid {codetype} to obtain proper results.")
 
     print(f"Time taken: {measure_algorithm_time()}")
 
