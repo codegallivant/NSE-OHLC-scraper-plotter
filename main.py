@@ -8,7 +8,6 @@ import pandas
 import matplotlib.pyplot as mplp
 import matplotlib.dates as mpld
 import mplcursors
-import numpy
 import time
     
 #Note: Requires internet connection 
@@ -19,7 +18,7 @@ print("\nNote: Requires internet connection.\n")
 
 #Inputting Equity/Indice choice
 while True:
-    codetype = input("Choose (Enter 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, FLIPKART, INFY, ASIANPAINT etc)\n2: Indice    (Examples: Nifty 50, Nifty Next 50, Nifty 100, Nifty 200 etc)\n")
+    codetype = input("Choose (Enter 1 or 2):\n1: Equity    (Examples: ZOMATO, IDEA, RELIANCE, INFY (Infosys), ASIANPAINT, BHARTIARTL (Airtel) etc)\n2: Indice    (Examples: Nifty 50, Nifty Next 50, Nifty 100, Nifty 200 etc)\n")
     print("\n")
 
     if codetype == '1':
@@ -180,7 +179,7 @@ def plot():
     mplp.plot(x,low, label="Low")
     mplp.plot(x,closing, label="Close")
 
-    #Ensuring no overlap between x ticks
+    #To ensure no overlap between x ticks, we specify intervals between consecutive x ticks(dates) in daylocator(), depending on number of ticks
     if len(x) <= 40:
         mplp.gca().xaxis.set_major_locator(mpld.DayLocator())
         mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
@@ -191,7 +190,7 @@ def plot():
         mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
     else:
         mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=32))
-        mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%b %Y'))
+        mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
         mplp.xticks(rotation=0) #To reduce overlapping of x ticks 
     
     mplp.gcf().autofmt_xdate()
