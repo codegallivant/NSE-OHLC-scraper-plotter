@@ -13,7 +13,7 @@ It's made using Python. After obtaining input regarding the equity/indice and th
 ## Installing pip libraries
 In the terminal,
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Credits for external libraries and files
