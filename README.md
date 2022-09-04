@@ -1,4 +1,4 @@
-# NSE-OHLC-Plotter
+# NSE-OHLC-chart-plotter
 Plots a graph of OHLC values (Open, high, low, close) versus date for an equity/indice registered in the National Stock Exchange of India (NSE).
 Requires an internet connection to work.
 
