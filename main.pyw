@@ -103,7 +103,7 @@ def button_command():
     def measure_algorithm_time():
         algorithm_end = time.time()
         seconds_taken = algorithm_end-algorithm_start
-        return time.strftime('%H hours, %M minutes and %S seconds', time.gmtime(seconds_taken))
+        return time.strftime('%H:%M:%S', time.gmtime(seconds_taken))
 
     # Return list of datetime.date objects between start_date and end_date (inclusive):
     dates = []
@@ -160,42 +160,62 @@ def button_command():
 
     dates_copy = list(dates)
 
-
+    progress_label.pack(side="left", anchor="w")
     progress_bar.pack(side="left", anchor="w")
-    ln=0
+
+    global code_exists
+    code_exists = None
+
     #Calling getOHLC() function for each date between start_date and end_date
-    for date in dates:
+    run_date_func_running = tk.BooleanVar()
+    run_date_func_running.set(True)
+    def run_date(ln):
+        if ln >= len(dates):
+            run_date_func_running.set(False)
+            return
+        date = dates[ln]
         ln = ln+1
         try:
             OHLC = getOHLC(date, code, codetype)
             # print(OHLC)
             print("\n")
+
+            if OHLC is False:
+                # The equity/indice does not exist.
+                run_date_func_running.set(False)
+                global code_exists
+                code_exists = False
+                return
+
+            opening.append(OHLC["open"])
+            high.append(OHLC["high"])
+            low.append(OHLC["low"])
+            closing.append(OHLC["close"])
+
+            if dates_copy == []:
+                progress_bar["value"] = progress_bar_maxvalue
+                progress_label["text"] = "100%"
+                root.update_idletasks()
+            else:
+                print(ln)
+                print(len(dates))
+                print((ln/len(dates))*progress_bar_maxvalue)
+                progress_bar['value'] = (ln/len(dates))*progress_bar_maxvalue
+                progress_label["text"] = str(int((ln/len(dates))*100))+'%'
+                root.update_idletasks()
+            root.after(5, lambda:run_date(ln))        
         except:
             #Error appears if link not found for that date i.e equity trading didn't happen on that date. Here we catch and combat this error.
             dates_copy.remove(date) # So that graphs can be plotted, elements of  dates & opening, high, low, closing lists must correspond to each other. Hence, we must remove the dates where equity trading didn't happen.
-             #Will later equate dates to dates_copy.
-            continue
-
-        if OHLC is False:
-            # The equity/indice does not exist.
-            break
-
-        opening.append(OHLC["open"])
-        high.append(OHLC["high"])
-        low.append(OHLC["low"])
-        closing.append(OHLC["close"])
-
-        if dates_copy == []:
-            progress_bar["value"] = progress_bar_maxvalue
-            root.update_idletasks()
-        else:
-            print(ln)
-            print(len(dates))
-            print((ln/len(dates))*progress_bar_maxvalue)
-            progress_bar['value'] = (ln/len(dates))*progress_bar_maxvalue
-            root.update_idletasks()
+            #Will later equate dates to dates_copy.
+            root.after(5, lambda:run_date(ln))
 
 
+    run_date(0)
+    print("asdkj")
+    if run_date_func_running.get() is True:
+        root.wait_variable(run_date_func_running)
+    print("djkal")
     dates = list(dates_copy)
 
     #The graph plotter
@@ -271,9 +291,9 @@ def button_command():
 
         pag.alert(message)
 
-    elif OHLC is False:
+    elif code_exists is False:
 
-        message += f"The {codetype} '{code}' does not exist i.e it is not registered in the NSE of India. Please enter a valid {codetype} to obtain proper results."
+        message += f"The {codetype} '{code}' does/did not exist in the given time range i.e it is/was not registered in the NSE of India at the time."
         
         if int(start_date.strftime('%Y')) < 2017: 
             message += "\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.\n"
@@ -293,6 +313,7 @@ def button_command():
         plot()
 
 
+    progress_label.pack_forget()
     progress_bar.pack_forget()
     plot_button["state"] = "normal"
     plot_button.configure(style = "Accent.TButton")
@@ -340,6 +361,7 @@ date_label3.grid(row=0, column=4)
 date_input_frame.grid(row=2, column=0, sticky = "ew", padx=10, pady=1.5, ipadx=10, ipady=2.5)
 
 footer_frame = tk.Frame(root)
+progress_label = tk.ttk.Label(footer_frame)
 progress_bar_maxvalue = 100
 progress_bar = tk.ttk.Progressbar(footer_frame, orient = "horizontal", length = 300, maximum = progress_bar_maxvalue, mode = "determinate")
 # progress_bar.pack(side="left", anchor = "w")
