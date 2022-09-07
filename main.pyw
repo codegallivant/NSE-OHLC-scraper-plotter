@@ -100,9 +100,9 @@ def button_command():
 
     algorithm_start= time.time()
     #Function to measure time taken by algorithm
-    def measure_algorithm_time():
+    def measure_time(start_time):
         algorithm_end = time.time()
-        seconds_taken = algorithm_end-algorithm_start
+        seconds_taken = algorithm_end-start_time
         return time.strftime('%H:%M:%S', time.gmtime(seconds_taken))
 
     # Return list of datetime.date objects between start_date and end_date (inclusive):
@@ -201,7 +201,7 @@ def button_command():
                 print(len(dates))
                 print((ln/len(dates))*progress_bar_maxvalue)
                 progress_bar['value'] = (ln/len(dates))*progress_bar_maxvalue
-                progress_label["text"] = str(int((ln/len(dates))*100))+'%'
+                progress_label["text"] = measure_time(run_date_start_time)+"   "+str(int((ln/len(dates))*100))+'%'
                 root.update_idletasks()
             root.after(5, lambda:run_date(ln))        
         except:
@@ -210,12 +210,11 @@ def button_command():
             #Will later equate dates to dates_copy.
             root.after(5, lambda:run_date(ln))
 
-
+    run_date_start_time = time.time()
     run_date(0)
-    print("asdkj")
     if run_date_func_running.get() is True:
         root.wait_variable(run_date_func_running)
-    print("djkal")
+
     dates = list(dates_copy)
 
     #The graph plotter
@@ -287,7 +286,7 @@ def button_command():
         if int(start_date.strftime('%Y')) < 2017: 
             message += "\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data."
         
-        message += f"\nTime taken: {measure_algorithm_time()}"
+        # message += f"\nTime taken: {measure_time(algorithm_start)}"
 
         pag.alert(message)
 
@@ -298,17 +297,17 @@ def button_command():
         if int(start_date.strftime('%Y')) < 2017: 
             message += "\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data.\n"
 
-        message += f"\nTime taken: {measure_algorithm_time()}"
+        # message += f"\nTime taken: {measure_time(algorithm_start)}"
 
         pag.alert(message)
         
     else:
 
-        message += f"Analysis complete.\nTime taken: {measure_algorithm_time()}"
+        # message += f"Analysis complete.\nTime taken: {measure_time(algorithm_start)}"
         
-        message += "\nPress OK to view the graph."
+        # message += "\nPress OK to view the graph."
 
-        pag.alert(message)
+        # pag.alert(message)
 
         plot()
 
