@@ -5,6 +5,7 @@
 import os
 from datetime import timedelta, datetime
 import pandas 
+import matplotlib.pylab as mplpyl
 import matplotlib.pyplot as mplp
 import matplotlib.dates as mpld
 import mplcursors
@@ -35,20 +36,27 @@ def is_connected(hostname):
 
 
 
-def button_command():
+def plot_button_command():
 
+    global cancel_boolvar
+    global internet_disconnected
+    global code_exists
 
-    plot_button["state"] = "disabled"
-    plot_button.configure(style = "Toggle.TButton")
-    root.update_idletasks()
+    cancel_boolvar.set(False)
+    code_exists = None
+    internet_disconnected = None
 
+    plot_button.grid()
+    plot_button.grid_remove()
+    cancel_button.grid()
 
     if not is_connected(REMOTE_SERVER):
         pag.alert("Please check your internet connection.")
-        plot_button["state"] = "normal"
-        plot_button.configure(style = "Accent.TButton")
+        cancel_button.grid_remove()
+        plot_button.grid()
         return
 
+    code = scriptcode_strvar.get().strip()
 
     if codetype_intvar.get() == 1:
         codetype = "equity"
@@ -72,20 +80,18 @@ def button_command():
         close_col = "Closing Index Value"
 
     else:
-
-        pag.alert("Please specify whether the code is an equity or an index.")
-        plot_button["state"] = "normal"
-        plot_button.configure(style = "Accent.TButton")
+        if code == "":
+            pag.alert(f"Please enter an equity/index.")
+        else:
+            pag.alert("Please specify whether the code is an equity or an index.")
+        cancel_button.grid_remove()
+        plot_button.grid()
         return 
 
-
-    code = scriptcode_strvar.get()
-    
     if code == "":
         pag.alert(f"Please specify the {codetype}'s' code.")
-        plot_button["state"] = "normal"
-        plot_button.configure(style = "Accent.TButton")
-        root.update_idletasks()
+        cancel_button.grid_remove()
+        plot_button.grid()
         return
 
     if codetype == "equity":
@@ -143,14 +149,21 @@ def button_command():
         '''
         
         print(f"TRADING DAY #{dates_copy.index(date)+1}\nReading CSV file of trades on {get_ambient_date(date)}...") 
-        df = pandas.read_csv(file_url, sep=",")  #Error is thrown here if the url does not direct to a csv i.e. no trades occurred because it was a holiday for the stock exchange
+
+        try:
+            df = pandas.read_csv(file_url, sep=",")  #Error is thrown here if the url does not direct to a csv i.e. no trades occurred because it was a holiday for the stock exchange
+        except Exception as e:
+            print(type(e).__name__)
+            print(repr(e))
+            print("CSV file could not be read.")
+            return type(e).__name__
 
         print("Reading complete. Processing...")
 
         data = df[df[name_col] == code]
 
         if data.empty:
-            #If the dataframe is empty it means that the equity/indice was not in the CSV inspite of it being a trade day. Therefore, the equity/indice doesn't exist.
+            #If the dataframe is empty it means that the equity/indice was not in the CSV inspite of it being a trade day. Therefore, the equity/indice didn't exist on that date.
             return False
         else:
             print(f"Data of trades for {code} on {get_ambient_date(date)}:\n{data}")
@@ -163,52 +176,57 @@ def button_command():
     progress_label.pack(side="left", anchor="w")
     progress_bar.pack(side="left", anchor="w")
 
-    global code_exists
-    code_exists = None
 
     #Calling getOHLC() function for each date between start_date and end_date
     run_date_func_running = tk.BooleanVar()
     run_date_func_running.set(True)
     def run_date(ln):
-        if ln >= len(dates):
+
+        global internet_disconnected
+        global code_exists
+
+        if ln >= len(dates) or cancel_boolvar.get() == True:
             run_date_func_running.set(False)
             return
+
         date = dates[ln]
-        ln = ln+1
-        try:
-            OHLC = getOHLC(date, code, codetype)
-            # print(OHLC)
-            print("\n")
 
-            if OHLC is False:
-                # The equity/indice does not exist.
-                run_date_func_running.set(False)
-                global code_exists
-                code_exists = False
-                return
+        ln += 1
 
+        OHLC = getOHLC(date, code, codetype)
+
+        print("\n")
+    
+        if OHLC == "HTTPError":
+            #Error appears if link not found for that date i.e equity trading didn't happen on that date. Here we catch and combat this error.
+            dates_copy.remove(date) # So that graphs can be plotted, elements of  dates & opening, high, low, closing lists must correspond to each other. Hence, we must remove the dates where equity trading didn't happen.
+            #Will later equate dates to dates_copy.
+        elif OHLC == "URLError" or OHLC == "RemoteDisconnected":
+            internet_disconnected = True
+            run_date_func_running.set(False)
+            return
+        elif OHLC is False:
+            #If the dataframe is empty it means that the equity/indice was not in the CSV inspite of it being a trade day. Therefore, the equity/indice didn't exist on that date.
+            dates_copy.remove(date)
+            code_exists = False
+        else:
+            code_exists = True
             opening.append(OHLC["open"])
             high.append(OHLC["high"])
             low.append(OHLC["low"])
             closing.append(OHLC["close"])
 
-            if dates_copy == []:
-                progress_bar["value"] = progress_bar_maxvalue
-                progress_label["text"] = "100%"
-                root.update_idletasks()
-            else:
-                print(ln)
-                print(len(dates))
-                print((ln/len(dates))*progress_bar_maxvalue)
-                progress_bar['value'] = (ln/len(dates))*progress_bar_maxvalue
-                progress_label["text"] = measure_time(run_date_start_time)+"   "+str(int((ln/len(dates))*100))+'%'
-                root.update_idletasks()
-            root.after(5, lambda:run_date(ln))        
-        except:
-            #Error appears if link not found for that date i.e equity trading didn't happen on that date. Here we catch and combat this error.
-            dates_copy.remove(date) # So that graphs can be plotted, elements of  dates & opening, high, low, closing lists must correspond to each other. Hence, we must remove the dates where equity trading didn't happen.
-            #Will later equate dates to dates_copy.
-            root.after(5, lambda:run_date(ln))
+        if dates_copy == []:
+            progress_bar["value"] = progress_bar_maxvalue
+            progress_label["text"] = "100%"
+            root.update_idletasks()
+        else:
+            progress_bar['value'] = (ln/len(dates))*progress_bar_maxvalue
+            progress_label["text"] = measure_time(run_date_start_time)+"   "+str(int((ln/len(dates))*100))+'%'
+            root.update_idletasks()
+
+        root.after(5, lambda:run_date(ln))        
+
 
     run_date_start_time = time.time()
     run_date(0)
@@ -219,6 +237,9 @@ def button_command():
 
     #The graph plotter
     def plot():
+
+        fig = mplpyl.gcf()
+        fig.canvas.manager.set_window_title(f"{code} OHLC Chart")
 
         x = [datetime.strptime(str(date.date()),'%Y-%m-%d').date() for date in dates]
 
@@ -236,8 +257,16 @@ def button_command():
             mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=15))
             mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
             mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
-        else:
+        elif len(x) <= 365:
             mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=32))
+            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
+            mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+        elif len(x) <= 2560:
+            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=182))
+            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
+            mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+        else:
+            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=365))
             mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
             mplp.xticks(rotation=0) #To reduce overlapping of x ticks 
         
@@ -246,32 +275,32 @@ def button_command():
         mplp.xlabel("Date")
         mplp.ylabel("O/H/L/C Price (₹)")
         
-        mplp.title(f"[ O/H/L/C prices V/S respective dates ] for {codetype} '{code}' (Analysis date range: {get_ambient_date(start_date)} to {get_ambient_date(end_date)})")
+        mplp.title(f"[OHLC prices VS respective dates] for {codetype} {code} ({get_ambient_date(dates[0])}-{get_ambient_date(dates[-1])})")
         mplp.legend()
 
         #Implementing hover functionality
         crs = mplcursors.cursor(hover=True)
 
         #Ensuring that the graph window is maximized on startup
-        try:
-            # Option 1
-            # QT backend
-            manager = mplp.get_current_fig_manager()
-            manager.window.showMaximized()
-        except:
-            try:
-                # Option 2
-                # TkAgg backend
-                manager = mplp.get_current_fig_manager()
-                manager.resize(*manager.window.maxsize())
-            except: 
-                try:   
-                    # Option 3
-                    # WX backend
-                    manager = mplp.get_current_fig_manager()
-                    manager.frame.Maximize(True)
-                except:
-                    pass
+        # try:
+        #     # Option 1
+        #     # QT backend
+        #     manager = mplp.get_current_fig_manager()
+        #     manager.window.showMaximized()
+        # except:
+        #     try:
+        #         # Option 2
+        #         # TkAgg backend
+        #         manager = mplp.get_current_fig_manager()
+        #         manager.resize(*manager.window.maxsize())
+        #     except: 
+        #         try:   
+        #             # Option 3
+        #             # WX backend
+        #             manager = mplp.get_current_fig_manager()
+        #             manager.frame.Maximize(True)
+        #         except:
+        #             pass
 
         mplp.show()
 
@@ -279,17 +308,8 @@ def button_command():
     message = ""
 
 
-    if dates==[]:
-
-        message += f"No trades took place in the duration specified.\nThis may be because the analysis date range specified completely consists of National Stock Exchange holidays, on which trading does not occur. Saturday, Sunday and national holidays are non-working days for the stock exchange.\nTo obtain proper results, please set a suitable date range after running the program again."
-        
-        if int(start_date.strftime('%Y')) < 2017: 
-            message += "\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data."
-        
-        # message += f"\nTime taken: {measure_time(algorithm_start)}"
-
-        pag.alert(message)
-
+    if cancel_boolvar.get() == True:
+        pass
     elif code_exists is False:
 
         message += f"The {codetype} '{code}' does/did not exist in the given time range i.e it is/was not registered in the NSE of India at the time."
@@ -300,7 +320,20 @@ def button_command():
         # message += f"\nTime taken: {measure_time(algorithm_start)}"
 
         pag.alert(message)
+    elif internet_disconnected is True:
+
+        pag.alert("Please check your internet connection")
+
+    elif dates==[]:
+
+        message += f"No trades took place in the duration specified.\nThis may be because the analysis date range specified completely consists of National Stock Exchange holidays, on which trading does not occur. Saturday, Sunday and national holidays are non-working days for the stock exchange.\nTo obtain proper results, please set a suitable date range after running the program again."
         
+        if int(start_date.strftime('%Y')) < 2017: 
+            message += "\n* NOTE: Results from 2016 rearwards may be inaccurate due to lack of available data."
+        
+        # message += f"\nTime taken: {measure_time(algorithm_start)}"
+
+        pag.alert(message)        
     else:
 
         # message += f"Analysis complete.\nTime taken: {measure_time(algorithm_start)}"
@@ -308,20 +341,23 @@ def button_command():
         # message += "\nPress OK to view the graph."
 
         # pag.alert(message)
+        cancel_button.grid_remove()
+        plot_button.grid()
+        plot_button["state"] = "disabled"
 
         plot()
 
 
     progress_label.pack_forget()
     progress_bar.pack_forget()
+    cancel_button.grid_remove()
+    plot_button.grid()
     plot_button["state"] = "normal"
-    plot_button.configure(style = "Accent.TButton")
-
 
 
 root = tk.Tk()
 root.resizable(0,0)
-root.title("Stock Market OHLC Graph Plotter")
+root.title("Stock Market OHLC Chart Plotter")
 root.iconbitmap('favicon.ico')
 root.tk.call('source', 'tkthemes/azure-ttk-theme/azure.tcl')  # Put here the path of your theme file
 root.tk.call("set_theme", "dark")
@@ -348,9 +384,12 @@ codetype_input_frame.grid(row=1, column=0, sticky = "ew", padx=10, pady=1.5, ipa
 
 date_input_frame = tk.ttk.LabelFrame(root)
 date_label1 = tk.Label(date_input_frame, text = "Plot OHLC values from")
-startdate_input = tkc.DateEntry(date_input_frame, selectmode = 'day', date = datetime.now(), maxdate = datetime.now(), date_pattern="dd/mm/yyyy")
+max_datetime_obj = datetime.now()
+startdate_input = tkc.DateEntry(date_input_frame, selectmode = 'day', maxdate = max_datetime_obj-timedelta(days=1), date_pattern="dd/mm/yyyy")
+startdate_input.set_date(max_datetime_obj-timedelta(days=7))
 date_label2 = tk.Label(date_input_frame, text = "to")
-enddate_input = tkc.DateEntry(date_input_frame, selectmode = 'day', date = datetime.now(), month = datetime.now().month, day = datetime.now().day, maxdate = datetime.now(), date_pattern="dd/mm/yyyy")
+enddate_input = tkc.DateEntry(date_input_frame, selectmode = 'day', date = max_datetime_obj, maxdate = max_datetime_obj, date_pattern="dd/mm/yyyy")
+enddate_input.set_date(max_datetime_obj)
 date_label3 = tk.Label(date_input_frame, text = ".")
 date_label1.grid(row=0, column=0, padx=(10,0))
 startdate_input.grid(row=0, column=1)
@@ -364,8 +403,15 @@ progress_label = tk.ttk.Label(footer_frame)
 progress_bar_maxvalue = 100
 progress_bar = tk.ttk.Progressbar(footer_frame, orient = "horizontal", length = 300, maximum = progress_bar_maxvalue, mode = "determinate")
 # progress_bar.pack(side="left", anchor = "w")
-plot_button  = tk.ttk.Button(footer_frame, text = "Analyse data and plot graph", command = button_command, style="Accent.TButton")
-plot_button.pack(side="right", anchor = "e")
+button_frame = tk.ttk.Frame(footer_frame)
+button_frame.pack(side="right", anchor = "e")
+plot_button  = tk.ttk.Button(button_frame, text = "Plot chart", command = plot_button_command, style="Accent.TButton")
+plot_button.grid(row=0,column=0)
+cancel_boolvar = tk.BooleanVar()
+cancel_boolvar.set(False)
+cancel_button = tk.ttk.Button(button_frame, text = "Cancel", command = lambda:cancel_boolvar.set(True), style="Toggle.TButton")
+cancel_button.grid(row=0,column=0)
+cancel_button.grid_remove()
 footer_frame.grid(row=3, column=0, padx=20, pady=15, sticky = "ew")
 
 root.mainloop()
