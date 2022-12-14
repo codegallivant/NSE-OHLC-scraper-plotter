@@ -5,10 +5,11 @@
 import os
 from datetime import timedelta, datetime
 import pandas 
-import matplotlib.pylab as mplpyl
-import matplotlib.pyplot as mplp
-import matplotlib.dates as mpld
-import mplcursors
+# import matplotlib.pylab as mplpyl
+# import matplotlib.pyplot as mplp
+# import matplotlib.dates as mpld
+import mplfinance as mplf
+# import mplcursors
 import time
 import tkinter as tk
 import tkcalendar as tkc
@@ -238,48 +239,55 @@ def plot_button_command():
     #The graph plotter
     def plot():
 
-        fig = mplpyl.gcf()
-        fig.canvas.manager.set_window_title(f"{code} OHLC Chart")
+        # fig = mplpyl.gcf()
+        # fig.canvas.manager.set_window_title(f"{code} OHLC Chart")
 
-        x = [datetime.strptime(str(date.date()),'%Y-%m-%d').date() for date in dates]
+        # x = [datetime.strptime(str(date.date()),'%Y-%m-%d').date() for date in dates]
 
-        mplp.plot(x,opening, label="Open")
-        mplp.plot(x,high, label="High")
-        mplp.plot(x,low, label="Low")
-        mplp.plot(x,closing, label="Close")
+        # mplp.plot(x,opening, label="Open")
+        # mplp.plot(x,high, label="High")
+        # mplp.plot(x,low, label="Low")
+        # mplp.plot(x,closing, label="Close")
 
+     
+        # plotting the data
+        data = pandas.DataFrame({"Open":opening,"High":high,"Low":low,"Close":closing}, index=dates)
+        customstyle = mplf.make_mpf_style(base_mpf_style='yahoo', y_on_right=False, facecolor='w')
+        mplf.plot(data, type="candle", xlabel="Date", ylabel="O/H/L/C Price (₹)", style=customstyle, title=f"[OHLC prices VS respective dates] for {codetype} {code} ({get_ambient_date(dates[0])}-{get_ambient_date(dates[-1])})")
+         
+    
         #To ensure no overlap between x ticks, we specify intervals between consecutive x ticks(dates) in daylocator(), depending on number of ticks
-        if len(x) <= 40:
-            mplp.gca().xaxis.set_major_locator(mpld.DayLocator())
-            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
-            mplp.xticks(rotation=30) #To reduce overlapping of x ticks 
-        elif len(x) <=80:
-            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=15))
-            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
-            mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
-        elif len(x) <= 365:
-            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=32))
-            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
-            mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
-        elif len(x) <= 2560:
-            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=182))
-            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
-            mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
-        else:
-            mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=365))
-            mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
-            mplp.xticks(rotation=0) #To reduce overlapping of x ticks 
+        # if len(x) <= 40:
+        #     mplp.gca().xaxis.set_major_locator(mpld.DayLocator())
+        #     mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
+        #     mplp.xticks(rotation=30) #To reduce overlapping of x ticks 
+        # elif len(x) <=80:
+        #     mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=15))
+        #     mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d/%m/%Y'))
+        #     mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+        # elif len(x) <= 365:
+        #     mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=32))
+        #     mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
+        #     mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+        # elif len(x) <= 2560:
+        #     mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=182))
+        #     mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
+        #     mplp.xticks(rotation=15) #To reduce overlapping of x ticks 
+        # else:
+        #     mplp.gca().xaxis.set_major_locator(mpld.DayLocator(interval=365))
+        #     mplp.gca().xaxis.set_major_formatter(mpld.DateFormatter('%d %b %Y'))
+        #     mplp.xticks(rotation=0) #To reduce overlapping of x ticks 
         
-        mplp.gcf().autofmt_xdate()
+        # mplp.gcf().autofmt_xdate()
         
-        mplp.xlabel("Date")
-        mplp.ylabel("O/H/L/C Price (₹)")
+        # mplp.xlabel("Date")
+        # mplp.ylabel("O/H/L/C Price (₹)")
         
-        mplp.title(f"[OHLC prices VS respective dates] for {codetype} {code} ({get_ambient_date(dates[0])}-{get_ambient_date(dates[-1])})")
-        mplp.legend()
+        # mplp.title(f"[OHLC prices VS respective dates] for {codetype} {code} ({get_ambient_date(dates[0])}-{get_ambient_date(dates[-1])})")
+        # mplp.legend()
 
         #Implementing hover functionality
-        crs = mplcursors.cursor(hover=True)
+        # crs = mplcursors.cursor(hover=True)
 
         #Ensuring that the graph window is maximized on startup
         # try:
@@ -302,7 +310,7 @@ def plot_button_command():
         #         except:
         #             pass
 
-        mplp.show()
+        # mplp.show()
 
 
     message = ""
