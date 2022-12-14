@@ -7,13 +7,17 @@ Requires an internet connection to work.
 ## What is OHLC ?
 An OHLC chart is a type of chart that shows open, high, low, and closing prices for each period. OHLC charts are useful since they show the four major data points over a period, with the closing price being considered the most important by many traders. 
 
-## How the program works
-It's made using Python. After obtaining input regarding the equity/indice and the date range from the user, the program then scrapes NSE trading data from the internet and goes on to plot the prices against their respective dates. 
+## How it works
+It's made using Python. After obtaining input regarding the equity/indice and the date range from the user, the program then scrapes NSE trading data from the internet and goes on to plot the prices against their respective dates in a candlestick chart. 
 
-## Installing pip libraries
-In the terminal,
+## Running it
+1. Installing pip libraries
 ```
 pip install -r requirements.txt
+```
+2. Running the program
+```
+python main.pyw
 ```
 
 ## Credits for external libraries and files
