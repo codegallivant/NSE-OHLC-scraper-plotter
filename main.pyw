@@ -365,7 +365,7 @@ def plot_button_command():
 
 root = tk.Tk()
 root.resizable(0,0)
-root.title("Stock Market OHLC Chart Plotter")
+root.title("Stock Market OHLC Chart Plotter (NSE)")
 root.iconbitmap('favicon.ico')
 root.tk.call('source', 'tkthemes/azure-ttk-theme/azure.tcl')  # Put here the path of your theme file
 root.tk.call("set_theme", "dark")
